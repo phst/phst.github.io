@@ -3,10 +3,13 @@ title: Emacs modules
 ---
 <meta charset="utf-8">
 
+# Emacs modules
+{:.no_toc}
+
 * TOC
 {:toc}
 
-# Introduction
+## Introduction
 
 The GNU Emacs dynamic module API is a C API that allows you to create extension
 modules for GNU Emacs written in C or any other language providing C bindings.
@@ -36,7 +39,7 @@ All the snippets on this page are subject to the following license:
 > the License.
 
 
-# Definitions
+## Definitions
 
 In this document I’ll use the terms [**undefined
 behavior**](https://en.wikipedia.org/wiki/Undefined_behavior) and
@@ -87,7 +90,7 @@ value of type `void *` and a **finalizer function** to clean up (“finalize”
 such a value.
 
 
-# Common requirements
+## Common requirements
 
 In this document I’ll use wording similar to
 [RFC 2119](https://www.ietf.org/rfc/rfc2119.txt) to describe the requirements
@@ -122,16 +125,16 @@ Structure types defined by the module API may contain private fields; modules
 mustn’t attempt to use or alter these fields.
 
 
-# Lifetime
+## Lifetime
 
-## Runtime lifetime
+### Runtime lifetime
 
 The lifetime of a runtime object is finite.  It corresponds to the C lifetime
 of the `emacs_runtime` pointer passed to the module initialization function.
 You must not access a runtime object outside its lifetime.
 
 
-## Environment lifetime
+### Environment lifetime
 
 The lifetime of an environment is finite; its beginning and end is described
 below, in the sections that describe how modules can obtain pointers to
@@ -140,7 +143,7 @@ them to module API functions outside of the lifetime of the environments they
 represent.
 
 
-## Value lifetime
+### Value lifetime
 
 Regarding their lifetime, there are two kinds of values: local values and
 global values.  Local values are *owned* by a specific environment, and their
@@ -155,7 +158,7 @@ comes first.
 Modules mustn’t access or use values outside of their lifetime.
 
 
-# Nested invocations
+## Nested invocations
 
 Multiple invocations to module initialization functions or module functions can
 be active at the same time.  Each such invocation receives a unique `emacs_env`
@@ -163,7 +166,7 @@ pointer that is different from all other environment pointers that are live at
 the same time.
 
 
-# Threads
+## Threads
 
 The mapping of Emacs Lisp threads to operating system threads is unspecified.
 Emacs will never call module initialization functions, module functions, and
@@ -180,9 +183,9 @@ fields of the structures described in this document from threads that Emacs
 hasn’t created.
 
 
-# Compatibility
+## Compatibility
 
-## Language compatibility
+### Language compatibility
 
 The Emacs module API is guaranteed to work with all standard C versions
 starting with C99 and with all standard C++ versions starting with C++11.  In
@@ -191,7 +194,7 @@ standard library headers from newer versions, so there’s a good chance that it
 works just fine with earlier language versions.
 
 
-## API compatibility
+### API compatibility
 
 All documented structure names, structure field names, enumeration names,
 enumerator names, enumerator values, and type alias names in the
@@ -206,7 +209,7 @@ prefixes.  `emacs-module.h` depends only on headers from the standard C
 library.
 
 
-## ABI compatibility
+### ABI compatibility
 
 To allow backwards and forwards compatibility, the following guarantees are
 made about all structure types described in this document:
@@ -236,7 +239,7 @@ same dynamic size, i.e., you have to check the `size` member only once per
 structure type.
 
 
-## Version comparison
+### Version comparison
 
 Before calling runtime or environment functions, you must check whether the
 Emacs binary your module is loaded in is new enough.  There are three ways to
@@ -363,7 +366,7 @@ recommend that you use the first option.  If you want to make your module
 available to older versions of Emacs, I recommend the second option.
 
 
-# Module loading and initialization
+## Module loading and initialization
 
 Emacs loads modules by calling the `module-load` function.
 
@@ -437,7 +440,7 @@ use the environment structure to signal an error, but returning an integer is
 always safe.
 
 
-# Emacs values
+## Emacs values
 
 The `emacs_value` type is defined as follows:
 
@@ -452,7 +455,7 @@ whether `NULL` represents a valid Emacs Lisp object, or whether identical
 Emacs Lisp objects are represented by equal pointers or not.
 
 
-# Environments
+## Environments
 
 The `emacs_env` type is a type alias for the following structure type:
 
@@ -516,7 +519,7 @@ struct emacs_env_25
 ```
 
 
-## Nonlocal exits
+### Nonlocal exits
 
 Some programming language have the concept of **nonlocal exits**: a function
 might not only return normally, but potentially “jump” to some other place in
@@ -582,7 +585,7 @@ or `error` Lisp functions.  `emacs_funcall_exit_throw` represents a nonlocal
 jump to a `catch` construct created by the `throw` Lisp function.
 
 
-### `non_local_exit_check`
+#### `non_local_exit_check`
 
 Module functions can obtain the last function exit type for an environment
 using `non_local_exit_check`:
@@ -598,7 +601,7 @@ otherwise it returns one of the other enumerators.
 `non_local_exit_check` is available since GNU Emacs 25.
 
 
-### `non_local_exit_get`
+#### `non_local_exit_get`
 
 For nonlocal exits Emacs stores additional data.  You can retrieve this data
 using `non_local_exit_get`:
@@ -628,7 +631,7 @@ the return value:
 `non_local_exit_get` is available since GNU Emacs 25.
 
 
-### `non_local_exit_signal`
+#### `non_local_exit_signal`
 
 ```c
 void non_local_exit_signal (emacs_env *env, emacs_value symbol,
@@ -651,7 +654,7 @@ overwrite the error symbol and data.  To do that, you must explicitly call
 `non_local_exit_signal` is available since GNU Emacs 25.
 
 
-### `non_local_exit_throw`
+#### `non_local_exit_throw`
 
 ```c
 void non_local_exit_throw (emacs_env *env, emacs_value tag, emacs_value value);
@@ -673,7 +676,7 @@ doesn’t overwrite catch tag and value.  To do that, you must explicitly call
 `non_local_exit_throw` is available since GNU Emacs 25.
 
 
-### `non_local_exit_clear`
+#### `non_local_exit_clear`
 
 ```c
 void non_local_exit_clear (emacs_env *env);
@@ -690,7 +693,7 @@ transform errors into different errors by calling `non_local_exit_get`,
 `non_local_exit_clear` is available since GNU Emacs 25.
 
 
-### How to deal with nonlocal exits properly
+#### How to deal with nonlocal exits properly
 
 The return value of the environment functions doesn’t indicate whether a
 nonlocal exit is pending.  The only exception is `copy_string_contents`; for
@@ -883,7 +886,7 @@ function will typically signal `memory-full` if they can’t allocate memory, an
 aren’t listed specifically.
 
 
-## Global references
+### Global references
 
 As explained above, most Emacs values have a short lifetime that ends once
 their owning `emacs_env` pointer goes out of scope.  However, occasionally it’s
@@ -909,7 +912,7 @@ scope manually.  Therefore I recommend to avoid global references as much as
 possible and use them only sparingly.
 
 
-### `make_global_ref`
+#### `make_global_ref`
 
 ```c
 emacs_value make_global_ref (emacs_env *env, emacs_value value);
@@ -923,7 +926,7 @@ is equal to *value*.  It’s also unspecified whether two calls to
 `make_global_ref` is available since GNU Emacs 25.
 
 
-### `free_global_ref`
+#### `free_global_ref`
 
 ```c
 void free_global_ref (emacs_env *env, emacs_value global_ref);
@@ -941,9 +944,9 @@ the value; that is, global references are reference-counted.
 `free_global_ref` is available since GNU Emacs 25.
 
 
-## Basic object tests
+### Basic object tests
 
-### `is_not_nil`
+#### `is_not_nil`
 
 ```c
 bool is_not_nil (emacs_env *env, emacs_value value);
@@ -957,7 +960,7 @@ any other valid Lisp object, for that matter).
 `is_not_nil` is available since GNU Emacs 25.
 
 
-### `eq`
+#### `eq`
 
 ```c
 bool eq (emacs_env *env, emacs_value a, emacs_value b);
@@ -976,7 +979,7 @@ the corresponding Lisp function.
 `eq` is available since GNU Emacs 25.
 
 
-### `type_of`
+#### `type_of`
 
 ```c
 emacs_value type_of (emacs_env *env, emacs_value value);
@@ -988,13 +991,13 @@ to the `type-of` Lisp function, which see.
 `type_of` is available since GNU Emacs 25.
 
 
-## Type conversion
+### Type conversion
 
 The environment functions described in this section convert various values
 between C and Emacs.
 
 
-### `make_integer`
+#### `make_integer`
 
 ```c
 emacs_value make_integer (emacs_env *env, intmax_t value);
@@ -1007,7 +1010,7 @@ type `overflow-error`.
 `make_integer` is available since GNU Emacs 25.
 
 
-### `extract_integer`
+#### `extract_integer`
 
 ```c
 intmax_t extract_integer (emacs_env *env, emacs_value value);
@@ -1021,7 +1024,7 @@ represented as `intmax_t`, Emacs signals an error of type `overflow-error`.
 `extract_integer` is available since GNU Emacs 25.
 
 
-### `make_float`
+#### `make_float`
 
 ```c
 emacs_value make_float (emacs_env *env, double value);
@@ -1033,7 +1036,7 @@ value.
 `make_float` is available since GNU Emacs 25.
 
 
-### `extract_float`
+#### `extract_float`
 
 ```c
 double extract_float (emacs_env *env, emacs_value value);
@@ -1046,7 +1049,7 @@ type `wrong-type-argument`.
 `extract_float` is available since GNU Emacs 25.
 
 
-### `make_string`
+#### `make_string`
 
 ```c
 emacs_value make_string (emacs_env *env, const char *contents,
@@ -1117,7 +1120,7 @@ make_string (emacs_env *env, const char *contents, size_t size,
 `make_string` is available since GNU Emacs 25.
 
 
-### `copy_string_contents`
+#### `copy_string_contents`
 
 ```c
 bool copy_string_contents(emacs_env *env, emacs_value value,
@@ -1220,9 +1223,9 @@ to the initial UTF-8 string.
 `copy_string_contents` is available since GNU Emacs 25.
 
 
-## Interning
+### Interning
 
-### `intern`
+#### `intern`
 
 ```c
 emacs_value intern (emacs_env *env, const char *symbol_name);
@@ -1275,7 +1278,7 @@ intern (emacs_env *env, const char *name, size_t size, emacs_value *result)
 ```
 
 
-## Function definition
+### Function definition
 
 The primary purpose of the module API is to allow you to make C functions
 available to Emacs; such functions are called **module functions**.  They have
@@ -1332,7 +1335,7 @@ it’s not declared `const`.  If *nargs* is zero, the value of *args* is
 unspecified; that means you mustn’t dereference it.
 
 
-### `make_function`
+#### `make_function`
 
 ```c
 typedef emacs_value (*emacs_subr) (emacs_env *env,
@@ -1584,7 +1587,7 @@ define it yourself if you want it.
 `make_function` is available since GNU Emacs 25.
 
 
-### `funcall`
+#### `funcall`
 
 ```c
 emacs_value funcall (emacs_env *env, emacs_value function,
@@ -1657,13 +1660,13 @@ funcall_symbol (emacs_env *env, const char *symbol,
 `funcall` is available since GNU Emacs 25.
 
 
-## Vector access
+### Vector access
 
 The module API provides direct access to vector elements without using
 `funcall`.
 
 
-### `vec_get`
+#### `vec_get`
 
 ```c
 emacs_value vec_get (emacs_env *env, emacs_value vec, ptrdiff_t index);
@@ -1677,7 +1680,7 @@ elements in *vec*, Emacs signals an error of type `args-out-of-range`.
 `vec_get` is available since GNU Emacs 25.
 
 
-### `vec_set`
+#### `vec_set`
 
 ```c
 void vec_set (emacs_env *env, emacs_value vec, ptrdiff_t index,
@@ -1692,7 +1695,7 @@ elements in *vec*, Emacs signals an error of type `args-out-of-range`.
 `vec_set` is available since GNU Emacs 25.
 
 
-### `vec_size`
+#### `vec_size`
 
 ```c
 ptrdiff_t vec_size (emacs_env *env, emacs_value vec);
@@ -1704,7 +1707,7 @@ a Lisp vector, Emacs signals an error of type `wrong-type-argument`.
 `vec_size` is available since GNU Emacs 25.
 
 
-## User pointers
+### User pointers
 
 When dealing with C code, it’s often useful to be able to store arbitrary C
 objects inside Emacs Lisp objects.  For this purpose the module API provides a
@@ -1722,7 +1725,7 @@ store a resource handle in a user pointer that requires deterministic
 finalization, you should use a different mechanism such as `unwind-protect`.
 Finalizers can’t interact with Emacs in any way; they also can’t fail.
 
-### `make_user_ptr`
+#### `make_user_ptr`
 
 ```c
 typedef void (*emacs_finalizer) (void *ptr);
@@ -1750,7 +1753,7 @@ want it you have to define it yourself.
 `make_user_ptr` is available since GNU Emacs 25.
 
 
-### `get_user_ptr`
+#### `get_user_ptr`
 
 ```c
 void *get_user_ptr (emacs_env *env, emacs_value value);
@@ -1764,7 +1767,7 @@ signals an error of type `wrong-type-argument`.
 `get_user_ptr` is available since GNU Emacs 25.
 
 
-### `set_user_ptr`
+#### `set_user_ptr`
 
 ```c
 void set_user_ptr (emacs_env *env, emacs_value value, void *ptr);
@@ -1777,7 +1780,7 @@ must be a user pointer object, otherwise Emacs signals an error of type
 `set_user_ptr` is available since GNU Emacs 25.
 
 
-### `get_user_finalizer`
+#### `get_user_finalizer`
 
 ```c
 emacs_finalizer get_user_finalizer (emacs_env *env, emacs_value value);
@@ -1792,7 +1795,7 @@ signals an error of type `wrong-type-argument`.
 `get_user_finalizer` is available since GNU Emacs 25.
 
 
-### `set_user_ptr`
+#### `set_user_ptr`
 
 ```c
 void set_user_finalizer (emacs_env *env, emacs_value value,
@@ -1807,9 +1810,9 @@ custom finalization.
 `set_user_ptr` is available since GNU Emacs 25.
 
 
-## Quitting
+### Quitting
 
-### `should_quit`
+#### `should_quit`
 
 ```c
 bool should_quit (emacs_env *env);
@@ -1911,7 +1914,7 @@ run_with_quit (emacs_env *env, void *(*operation)(void *), void *arg,
 `should_quit` is available since GNU Emacs 26.
 
 
-# C++ compatibility
+## C++ compatibility
 
 Emacs modules can be written in C++.  When including `emacs-module.h`, all
 definitions will get C language linkage.  Module functions, initialization
@@ -2112,9 +2115,9 @@ catch (const emacs_throw& exc)
 ```
 
 
-# Caveats and bugs
+## Caveats and bugs
 
-## Emacs may jump out of arbitrary code on stack overflow
+### Emacs may jump out of arbitrary code on stack overflow
 
 Emacs installs a signal handler for SIGSEGV that attempts to recover from stack
 overflows using `longjmp`.  In modules written in C++, this typically causes
@@ -2124,7 +2127,7 @@ behavior in most cases by resetting the signal handler for SIGSEGV to the
 default, which will cause Emacs to terminate on stack overflows.
 
 
-## When using 32-bit pointers, Emacs may jump out of `non_local_error_get`
+### When using 32-bit pointers, Emacs may jump out of `non_local_error_get`
 
 There is a bug in the current Emacs codebase that can cause
 `non_local_error_get` to execute an uncontrollable `longjmp`.  However, this
@@ -2132,7 +2135,7 @@ code path should only get taken in 32-bit processes, so you can prevent it by
 failing compilation if pointers are not 64 bits wide.
 
 
-## Check the size of `emacs_runtime` and `emacs_env` structures
+### Check the size of `emacs_runtime` and `emacs_env` structures
 
 Modules compiled with some version of `emacs-module.h` can be loaded into Emacs
 processes using a different version.  The Emacs module structure types
@@ -2144,7 +2147,7 @@ is to compare the dynamic size (the value of the `size` field) against the
 static size, as explained in the example below.
 
 
-## No sentinel values for nonlocal exits
+### No sentinel values for nonlocal exits
 
 Except for `copy_string_contents`, you can’t detect whether a module function
 has requested a nonlocal exit by only looking at its return value.
@@ -2154,7 +2157,7 @@ function `non_local_exit_check` or `non_local_exit_get` to determine whether
 there’s a pending nonlocal exit.
 
 
-## `emacs_value` objects are not real pointers
+### `emacs_value` objects are not real pointers
 
 The `emacs_value` type is defined as an alias of a structure without
 definition.  However, it’s a completely transparent type, and objects of that
@@ -2165,7 +2168,7 @@ not represent a valid Lisp object.  Therefore, you must never dereference
 or argument type or module environment functions.
 
 
-## When a nonlocal exit is pending, module functions silently do nothing
+### When a nonlocal exit is pending, module functions silently do nothing
 
 There are lots of ways to represent failure modes in code: using C `errno`
 values, C++ exceptions, sum types like Haskell’s `Either`, etc.  Some of them,
@@ -2181,7 +2184,7 @@ consequences of this behavior and use the nonlocal exit handling functions
 appropriately.
 
 
-## Strings passed to `make_string` must be null-terminated
+### Strings passed to `make_string` must be null-terminated
 
 Even though you have to pass the length of the string explicitly to
 `make_string`, the string must still be null-terminated.  This is unlike all
@@ -2189,14 +2192,14 @@ other C APIs, which either take a null-terminated string or a pointer and a
 length.
 
 
-## Module functions may not modify the contents of the *args* array
+### Module functions may not modify the contents of the *args* array
 
 Module functions receive their arguments in the *args* parameter.  That
 parameter is defined as `emacs_value *args`.  Even though it’s not defined as a
 pointer to `const`, module functions must not modify the array.
 
 
-# Example
+## Example
 
 This is an example that shows how to work around some of the caveats described
 above.  It refuses to compile if not in 64-bit mode, checks the sizes of the
@@ -2251,7 +2254,7 @@ emacs_module_init (struct emacs_runtime *ert)
 ```
 
 
-# Module assertions
+## Module assertions
 
 You can pass a command-line option `-module-assertions` (or
 `--module-assertions`) to the Emacs binary.  If you supply this option, Emacs
@@ -2272,7 +2275,7 @@ C `assert` macro), and Emacs source-level assertions (the C `eassert` and
 `eassume` macros).
 
 
-# History
+## History
 
 The module API as presented here was designed by Daniel Colascione and
 primarily implemented by Aurélien Aptel.  You can find the [original design
