@@ -1880,8 +1880,6 @@ run_with_quit (emacs_env *env, void *(*operation)(void *), void *arg,
         {
           if (env->should_quit (env))
             {
-              env->non_local_exit_signal (env, env->intern (env, "timeout"),
-                                          env->intern (env, "nil"));
               status = pthread_detach (thread);
               assert (status == 0);
               return false;
