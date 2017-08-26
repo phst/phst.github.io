@@ -1843,16 +1843,16 @@ example using this helper function:
 #include <emacs-module.h>
 
 static void
-assert_timespec (const struct timespec *time)
+assert_timespec (struct timespec time)
 {
-  assert (time->tv_sec >= 0);
-  assert (time->tv_nsec >= 0);
-  assert (time->tv_nsec < TIMESPEC_RESOLUTION);
+  assert (time.tv_sec >= 0);
+  assert (time.tv_nsec >= 0);
+  assert (time.tv_nsec < TIMESPEC_RESOLUTION);
 }
 
 static bool
 run_with_quit (emacs_env *env, void *(*operation)(void *), void *arg,
-               const struct timespec *interval, void **result)
+               struct timespec interval, void **result)
 {
   pthread_t thread;
   int status = pthread_create (&thread, NULL, operation, arg);
@@ -1871,9 +1871,9 @@ run_with_quit (emacs_env *env, void *(*operation)(void *), void *arg,
          clock jumps.  */
       struct timespec now;
       gettime (&now);
-      assert_timespec (&now);
+      assert_timespec (now);
       struct timespec timeout = timespec_add (now, interval);
-      assert_timespec (&timeout);
+      assert_timespec (timeout);
       /* pthread_timedjoin_np(3) is only available on GNU/Linux.  */
       status = pthread_timedjoin_np (thread, result, &timeout);
       if (status == ETIMEDOUT)
