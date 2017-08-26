@@ -1838,7 +1838,7 @@ example using this helper function:
 
 #include <pthread.h>
 
-#include <intprops.h>  /* from Gnulib */
+#include <timespec.h>  /* from Gnulib */
 
 #include <emacs-module.h>
 
@@ -1847,23 +1847,7 @@ assert_timespec (const struct timespec *time)
 {
   assert (time->tv_sec >= 0);
   assert (time->tv_nsec >= 0);
-  assert (time->tv_nsec < 1000000000);
-}
-
-static void
-increment_timespec (struct timespec *dest, const struct timespec *source)
-{
-  assert_timespec (dest);
-  assert_timespec (source);
-  bool overflow = INT_ADD_WRAPV (dest->tv_sec, source->tv_sec, &dest->tv_sec)
-    || INT_ADD_WRAPV (dest->tv_nsec, source->tv_nsec, &dest->tv_nsec);
-  assert (!overflow);
-  if (dest->tv_nsec >= 1000000000)
-    {
-      ++dest->tv_sec;
-      dest->tv_nsec -= 1000000000;
-    }
-  assert_timespec (dest);
+  assert (time->tv_nsec < TIMESPEC_RESOLUTION);
 }
 
 static bool
@@ -1885,10 +1869,11 @@ run_with_quit (emacs_env *env, void *(*operation)(void *), void *arg,
     {
       /* We have to recalculate the timeout in every iteration to account for
          clock jumps.  */
-      struct timespec timeout;
-      status = clock_gettime (CLOCK_REALTIME, &timeout);
-      assert (status == 0);
-      increment_timespec (&timeout, interval);
+      struct timespec now;
+      gettime (&now);
+      assert_timespec (&now);
+      struct timespec timeout = timespec_add (now, interval);
+      assert_timespec (&timeout);
       /* pthread_timedjoin_np(3) is only available on GNU/Linux.  */
       status = pthread_timedjoin_np (thread, result, &timeout);
       if (status == ETIMEDOUT)
