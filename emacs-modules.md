@@ -1874,7 +1874,9 @@ run_with_quit (emacs_env *env, void *(*operation)(void *), void *arg,
       assert_timespec (now);
       struct timespec timeout = timespec_add (now, interval);
       assert_timespec (timeout);
-      /* pthread_timedjoin_np(3) is only available on GNU/Linux.  */
+      /* pthread_timedjoin_np(3) is only available on GNU/Linux.  See
+         https://stackoverflow.com/a/11552244/178761 for a portable
+         replacement.  */
       status = pthread_timedjoin_np (thread, result, &timeout);
       if (status == ETIMEDOUT)
         {
