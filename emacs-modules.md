@@ -391,7 +391,7 @@ emacs_runtime`, which is defined as follows:
 struct emacs_runtime
 {
   ptrdiff_t size;
-  struct unspecified *private_members;
+  struct /* unspecified */ *private_members;
   emacs_env *(*get_environment) (struct emacs_runtime *runtime);
 };
 ```
@@ -445,7 +445,7 @@ always safe.
 The `emacs_value` type is defined as follows:
 
 ```c
-typedef struct unspecified *emacs_value;
+typedef struct /* unspecified */ *emacs_value;
 ```
 
 That is, an `emacs_value` is a pointer to an opaque structure.  Modules mustn’t
@@ -463,7 +463,7 @@ The `emacs_env` type is a type alias for the following structure type:
 struct emacs_env_26
 {
   ptrdiff_t size;
-  struct unspecified *private_members;
+  struct /* unspecified */ *private_members;
   /* Pointers to environment functions. */
 }
 
