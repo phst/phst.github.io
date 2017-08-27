@@ -1850,6 +1850,11 @@ assert_timespec (struct timespec time)
   assert (time.tv_nsec < TIMESPEC_RESOLUTION);
 }
 
+/* Run the given operation and check at regular intervals whether the user
+   wants to quit.  If the operation completed successfully, return true.
+   If the user wants to quit or an error occurred, return false; the caller
+   should then return to Emacs as quickly as possible.  */
+
 static bool
 run_with_quit (emacs_env *env, void *(*operation)(void *), void *arg,
                struct timespec interval, void **result)
