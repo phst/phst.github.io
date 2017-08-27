@@ -1267,7 +1267,7 @@ intern (emacs_env *env, const char *name, size_t size, emacs_value *result)
   else
     {
       emacs_value string_object;
-      /* “make_string” from above. */
+      /* ‘make_string’ from above. */
       if (!make_string (env, name, size, &string_object))
         return false;
       *result = env->funcall (env, env->intern (env, "intern"),
@@ -1627,7 +1627,7 @@ funcall_symbol (emacs_env *env, const char *symbol,
                 emacs_value *result)
 {
   emacs_value symbol_value;
-  /* “intern” from above. */
+  /* ‘intern’ from above. */
   if (!intern (env, symbol, &symbol_value))
     return false;
   if (nargs > PTRDIFF_MAX)
